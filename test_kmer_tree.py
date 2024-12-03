@@ -40,3 +40,14 @@ def test_get_last_node () :
     assert tree.get_last_node("ACG") == gnode3
 
 
+def test_remove_kmer () :
+    tree = create_tree()
+    tnode4 = tree.get_last_node("ACGT")
+    assert "2a" in tnode4.reads
+    tree.remove_kmer("ACGT", "2a")
+    assert "2a" not in tnode4.reads
+    with pytest.raises(KeyError):
+        tree.remove_kmer("ACCC", "1s")
+        tree.remove_kmer("ACGT", "7s")
+    tree.remove_kmer("TTTT", "2a")
+

@@ -31,11 +31,11 @@ class KMerTree ():
             return None
         return self.children[kmer[0]].get_last_node(kmer[1:])
 
-    def remove_kmer(self, kmer, read_name) -> bool :
-        # pas finie
-        if not self.children :
+    def remove_kmer(self, kmer, read_name) :
+        if len(kmer) == 0 :
             self.reads.remove(read_name)
-            if not self.reads :
-                return True
-        if self.remove_kmer(kmer, read_name):
-            self.children.pop(kmer, read_name)
+            return None # on est dans le noeud qui porte le set
+        target_child = self.children[kmer[0]]
+        target_child.remove_kmer(kmer[1:], read_name)
+        if not target_child.reads and not target_child.children :
+            self.children.pop(kmer[0])
