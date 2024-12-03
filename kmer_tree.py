@@ -73,17 +73,20 @@ class KMerTree ():
             return None
         return self.children[kmer[0]].get_last_node(kmer[1:])
 
-    def remove_kmer(self, kmer, read_name) :
+    def remove_kmer(self, kmer, read_name=None) :
         """
         Remove a kmer from the tree.
         A kmer is completely removed from the tree when all kmer's origin are deleted. (If a kmer comes from
         'read1' and 'read2', you should use remove_kmer(kmer, 'read1') and remove_kmer(kmer, 'read2').
         :param str kmer: A kmer in the tree
-        :param read_name: A tag related to kmer's origin (read tag)
+        :param read_name: Optional, a tag related to kmer's origin (read tag). If None, all tags are removed
         """
         if len(kmer) == 0 :
             # We are in the node that contain the origin of this kmer
-            self.reads.remove(read_name)
+            if read_name is None:
+                self.reads.clear()
+            else:
+                self.reads.remove(read_name)
             return None
         target_child = self.children[kmer[0]]
         target_child.remove_kmer(kmer[1:], read_name)

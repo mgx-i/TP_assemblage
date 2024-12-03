@@ -45,6 +45,7 @@ def test_get_last_node () :
     tnode4 = gnode3.get_child("T")
     assert tree.get_last_node("ACGT") == tnode4
     assert tree.get_last_node("ACG") == gnode3
+    assert tree.get_last_node("CCC") is None
 
 
 def test_remove_kmer () :
