@@ -1,7 +1,8 @@
 from kmer_tree import *
 import pytest
 
-def create_tree () :
+def create_tree () -> KMerTree:
+    """Generate a KMerTree that will be used in test functions."""
     tree = KMerTree("root")
     tree.add_kmer("ACGT", "1s")
     tree.add_kmer("GCTT", "1s")
@@ -12,6 +13,11 @@ def create_tree () :
 
 
 def test_kmer_initialisation () :
+    """Test the initialization of a KMerTree. Functions tested are :
+    KMerTree.__init__
+    KMerTree.add_kmer
+    KMerTree.get_child
+    KMerTree.has_child"""
     tree = KMerTree("root")
 
     tree.add_kmer("ACGT", "1a")
@@ -31,6 +37,7 @@ def test_kmer_initialisation () :
 
 
 def test_get_last_node () :
+    """Test KMerTree.get_last_node"""
     tree = create_tree()
     anode1 = tree.get_child("A")
     cnode2 = anode1.get_child("C")
@@ -41,6 +48,7 @@ def test_get_last_node () :
 
 
 def test_remove_kmer () :
+    """Test KMerTree.remove_kmer"""
     tree = create_tree()
     tnode4 = tree.get_last_node("ACGT")
     assert "2a" in tnode4.reads
