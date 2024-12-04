@@ -10,30 +10,6 @@ def reverse_sequence (s : str) -> str :
     return "".join(reversed([reversed_nucleotide[nucleotide] for nucleotide in s]))
 
 
-"""def read_fastq():
-    #version test
-    reversed_nucleotide = {"A": "T",
-                     "T": "A",
-                     "G": "C",
-                     "C": "G"}
-    l_ = [
-        "AAATGCGATCCGATAGGCA",
-        "GATAGGCAAGGTGAGCTAG",
-        "GCTAGGGGATTCACTGATT",
-        "ACTGATTAAGGGTCGACGA",
-        "AGGGTCACCCGATCGATCA",
-        "CGATCGATGCGGGAGTTTC"
-    ]
-
-    l_ = [
-        "TAGCCGATAG",
-        "GATAGGCAAG",
-    ]
-
-    for i, reads in enumerate(l_):
-        yield reads, f"{i}"""
-
-
 def read_fastq(file_name) :
     f = open(file_name, "r")
     next_is_fastq = True
@@ -81,17 +57,17 @@ def extend_kmer (contig : str, k : int, tree : KMerTree) -> str :
             tree.remove_kmer(forward_kmer)
             tree.remove_kmer(reverse_kmer)
         else :
-            return contig
+            return contig, "Multiple_possibilities"
 
         end_kmer = contig[len(contig) - k + 1:]
         last_node = tree.get_last_node(end_kmer)
 
-    return contig
+    return contig, "No_matching_kmer"
 
 
-def assemble (k : int) -> int :
+def assemble (path: str, k : int) -> int :
     kmer_tree = KMerTree(name="root")
-    for read, tag in read_fastq("reads.fastq.fq"):
+    for read, tag in read_fastq(path):
         fill_kmer_tree(kmer_tree, read, tag, k)
 
     f = open(f"contigs_{k}.txt", "w")
@@ -102,46 +78,37 @@ def assemble (k : int) -> int :
         kmer_tree.remove_kmer(reverse_sequence(first_kmer))
 
         # étend le kmer vers la droite
-        intermediate_contig = extend_kmer(first_kmer, k, kmer_tree)
+        intermediate_contig, right_stop = extend_kmer(first_kmer, k, kmer_tree)
         # on retourne le contig pour l'étendre vers la gauche :
         reverse_intermediate_contig = reverse_sequence(intermediate_contig)
-        contig = extend_kmer(reverse_intermediate_contig, k, kmer_tree)
+        contig, left_stop = extend_kmer(reverse_intermediate_contig, k, kmer_tree)
 
-        f.write(f">Contig {i}\n")
+        f.write(f">Contig {i} {right_stop}-{left_stop}\n")
         f.write(contig)
-        f.write('\n')
+        f.write('\n\n')
         i += 1
 
     f.close()
     return i
 
 
-# nombre de contigs pour k
-def contigs_for_k(kn) :
+def contigs_for_k(path, kn) :
     f = open("contigs_stats.txt", "w")
     f.write("k \t nb contigs\n")
     for k in range(3,kn+1,2):
-        n_contigs = assemble(k)
+        n_contigs = assemble(path, k)
         f.write(f"{k}\t{n_contigs}\n")
     f.close()
 
-contigs_for_k(29)
 
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) != 3:
+        print("Two arguments needed : \n\t- fastq file path \n\t- kmer size")
+        exit(1)
 
-
-"""k=5
-kmer_tree = KMerTree(name="root")
-for read, tag in read_fastq():
-    fill_kmer_tree(kmer_tree, read, tag, k)
-
-print("tree :")
-kmer_tree.display()
-first_kmer = pick_kmer(kmer_tree)
-print(first_kmer)
-kmer_tree.remove_kmer(first_kmer)
-
-"""
-
-
-
-
+    try:
+        assemble(path=sys.argv[1], k=int(sys.argv[2]))
+    except Exception as E:
+        print(f"Unexpected exception : {E}")
+        exit(2)
