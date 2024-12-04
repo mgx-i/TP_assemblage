@@ -1,6 +1,5 @@
-from sys import displayhook
-
 from kmer_tree import *
+import timeit
 
 def reverse_sequence (s : str) -> str :
     reversed_nucleotide = {"A": "T",
@@ -57,12 +56,12 @@ def extend_kmer (contig : str, k : int, tree : KMerTree) -> str :
             tree.remove_kmer(forward_kmer)
             tree.remove_kmer(reverse_kmer)
         else :
-            return contig, "Multiple_possibilities"
+            return contig
 
         end_kmer = contig[len(contig) - k + 1:]
         last_node = tree.get_last_node(end_kmer)
 
-    return contig, "No_matching_kmer"
+    return contig
 
 
 def assemble (path: str, k : int) -> int :
@@ -70,7 +69,7 @@ def assemble (path: str, k : int) -> int :
     for read, tag in read_fastq(path):
         fill_kmer_tree(kmer_tree, read, tag, k)
 
-    f = open(f"contigs_{k}.txt", "w")
+    f = open(f"contigs_{k}.fa", "w")
     i = 1
     while kmer_tree.children : # tant qu'il y a des kmers dans le tree
         first_kmer = pick_kmer(kmer_tree)
@@ -78,14 +77,14 @@ def assemble (path: str, k : int) -> int :
         kmer_tree.remove_kmer(reverse_sequence(first_kmer))
 
         # étend le kmer vers la droite
-        intermediate_contig, right_stop = extend_kmer(first_kmer, k, kmer_tree)
+        intermediate_contig = extend_kmer(first_kmer, k, kmer_tree)
         # on retourne le contig pour l'étendre vers la gauche :
         reverse_intermediate_contig = reverse_sequence(intermediate_contig)
-        contig, left_stop = extend_kmer(reverse_intermediate_contig, k, kmer_tree)
+        contig = extend_kmer(reverse_intermediate_contig, k, kmer_tree)
 
-        f.write(f">Contig {i} {right_stop}-{left_stop}\n")
+        f.write(f">{i}__len__{len(contig)}\n")
         f.write(contig)
-        f.write('\n\n')
+        f.write('\n')
         i += 1
 
     f.close()
@@ -103,12 +102,14 @@ def contigs_for_k(path, kn) :
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) != 3:
+    if len(sys.argv) < 3:
         print("Two arguments needed : \n\t- fastq file path \n\t- kmer size")
         exit(1)
 
     try:
-        assemble(path=sys.argv[1], k=int(sys.argv[2]))
+        print(f"Assembly from file {sys.argv[1]} with k={sys.argv[2]}.")
+        print(f"Executed in {timeit.timeit(lambda : assemble(path=sys.argv[1], k=int(sys.argv[2])), number=1)}s.")
+
     except Exception as E:
         print(f"Unexpected exception : {E}")
         exit(2)
