@@ -60,3 +60,14 @@ def test_remove_kmer () :
         tree.remove_kmer("ACGT", "7s")
     tree.remove_kmer("TTTT", "2a")
 
+def test_add_remove():
+    # Un arbre avec reverse et le pas reverse
+    # Tu retire un pas reverse et un reverse
+    # Même chose sur le même arbre avec une séquence taille k-1
+    tree = KMerTree("root")
+    tree.add_kmer("ACCTG", "1f")
+    tree.add_kmer("CAGGT", "1r")
+    tree.remove_kmer("ACCTG")
+    tree.remove_kmer("CAGGT")
+    assert tree.children == {}
+

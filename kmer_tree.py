@@ -93,3 +93,13 @@ class KMerTree ():
         if not target_child.reads and not target_child.children :
             # This child have does not contain any valuable data. It must be exterminated.
             self.children.pop(kmer[0])
+
+    def display(self, prefix="", connector="`-"):
+        print(prefix, connector, self.name, sep="")
+
+        for i, (names, child) in enumerate(self.children.items()):
+            if i == len(self.children.items()) - 1:
+                child.display(f"{prefix}\t", "`-")
+            else:
+                child.display(f"{prefix}\t|", "-")
+
